@@ -41,7 +41,7 @@ export async function convertJson(yamlfile: string, yamlaspath: boolean = false)
   }
 }
 
-;(async function () {
-  const A = await convertJson(path.join(process.cwd(), '/src/engine/misc-files/demo-workflow.yaml'), true)
-  console.dir(A, { depth: null, colors: true })
-})()
+// ;(async function () {
+//   const A = await convertJson(path.join(process.cwd(), '/src/engine/misc-files/demo-workflow.yaml'), true)
+//   console.dir(A, { depth: null, colors: true })
+// })()
