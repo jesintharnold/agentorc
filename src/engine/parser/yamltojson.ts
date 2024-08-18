@@ -3,7 +3,7 @@ import YAML from 'js-yaml'
 import fs from 'fs-extra'
 import path from 'path'
 import Ajv from 'ajv'
-import { workflow } from '../interfaces/Task'
+import { workflow } from '../interfaces/enginecore'
 import { ParseError } from './ParserError'
 const ajv = new Ajv({ strict: false })
 

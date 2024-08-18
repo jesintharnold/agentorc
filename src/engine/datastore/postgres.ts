@@ -42,4 +42,8 @@ export class Postgres {
       return false
     }
   }
+
+  public con(): postgres.Sql<any> {
+    return this.postgrescon
+  }
 }

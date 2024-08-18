@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DepGraph } from 'dependency-graph'
-import { workflow } from '../interfaces/Task'
+import { workflow } from '../interfaces/enginecore'
 
 export async function orderTask(data: workflow): Promise<string[]> {
   try {
