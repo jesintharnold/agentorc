@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DepGraph } from 'dependency-graph'
-import { workflow } from '../interfaces/enginecore'
+import { JOB } from '../interfaces/enginecore'
 
-export async function orderTask(data: workflow): Promise<string[]> {
+export async function orderTask(data: JOB): Promise<string[]> {
   try {
     const graph = new DepGraph()
     const tasklength = data.tasks.length

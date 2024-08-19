@@ -3,7 +3,7 @@ import YAML from 'js-yaml'
 import fs from 'fs-extra'
 import path from 'path'
 import Ajv from 'ajv'
-import { workflow } from '../interfaces/enginecore'
+import { JOB } from '../interfaces/enginecore'
 import { ParseError } from './ParserError'
 const ajv = new Ajv({ strict: false })
 
@@ -11,7 +11,7 @@ const schemaPath = path.resolve(path.join(process.cwd(), '/src/engine/misc-files
 const schemaData = fs.readFileSync(schemaPath, 'utf-8')
 const validateJson = ajv.compile(JSON.parse(schemaData))
 
-export async function convertJson(yamlfile: string, yamlaspath: boolean = false): Promise<workflow> {
+export async function convertJson(yamlfile: string, yamlaspath: boolean = false): Promise<JOB> {
   try {
     if (yamlaspath && path.extname(yamlfile) != '.yaml') {
       throw new ParseError('Invalid file extension. Please provide a file with .yaml extension.', 'INVALID_EXTENSION')
@@ -23,7 +23,7 @@ export async function convertJson(yamlfile: string, yamlaspath: boolean = false)
       }
       yamlfile = await fs.readFile(yamlfilepath, 'utf-8')
     }
-    const yamlContent: workflow = (await YAML.load(yamlfile)) as workflow
+    const yamlContent: JOB = (await YAML.load(yamlfile)) as JOB
     const valid = validateJson(yamlContent)
     if (!valid) {
       const errors = validateJson?.errors?.map((error) => error.message).join('\n')
@@ -41,7 +41,7 @@ export async function convertJson(yamlfile: string, yamlaspath: boolean = false)
   }
 }
 
-// ;(async function () {
-//   const A = await convertJson(path.join(process.cwd(), '/src/engine/misc-files/demo-workflow.yaml'), true)
-//   console.dir(A, { depth: null, colors: true })
-// })()
+;(async function () {
+  const A = await convertJson(path.join(process.cwd(), '/src/engine/misc-files/demo-workflow.yaml'), true)
+  console.dir(A, { depth: null, colors: true })
+})()

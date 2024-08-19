@@ -3,10 +3,10 @@ export interface ENV {
 }
 
 export enum STATUS {
-  'PENDING',
-  'SCHEDULED',
-  'RUNNING',
-  'COMPLETED'
+  PENDING = 'PENDING',
+  SCHEDULED = 'SCHEDULED',
+  RUNNING = 'RUNNING',
+  COMPLETED = 'COMPLETED'
 }
 
 export interface JOB {
