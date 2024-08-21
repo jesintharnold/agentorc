@@ -40,7 +40,7 @@ create table if not exists ORC.jobexecutions (
 
 --- Tasks
 create table if not exists ORC.taskexecutions (
-    ID UUID NOT NULL,
+    ID UUID NOT NULL PRIMARY KEY,
     JOB_EXC_ID UUID REFERENCES ORC.jobexecutions(ID) ON DELETE CASCADE,
     TASK_ID UUID NOT NULL,
     STATE VARCHAR(10) NOT NULL,
@@ -48,4 +48,12 @@ create table if not exists ORC.taskexecutions (
     END_TIME TIMESTAMP,
     LOGS TEXT,
     UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+create table if not exists ORC.tasklog (
+    ID UUID DEFAULT uuid_generate_v4(),
+    TASK_EXEC_ID UUID REFERENCES ORC.taskexecutions(ID) ON DELETE CASCADE,
+    task_part_number INTEGER,
+    LOGS TEXT,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

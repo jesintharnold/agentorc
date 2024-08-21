@@ -129,16 +129,29 @@ export async function updatetaskState(state: string, ID: string): Promise<boolea
 // - IF A TASK is selected , then mention the logs
 // UPDATE TASK LOG BY ID
 
-// export async function updatetaskLog(ID: string, logs: string): Promise<boolean> {
-//   try {
-//     await connection`
-//         UPDATE orc.taskexecutions
-// 	        SET state=${state} ${state == STATUS.COMPLETED ? connection`, end_time = ${connection`CURRENT_TIMESTAMP()`}` : connection``}
-// 	          WHERE id=${ID};
-//         `
-//     return true
-//   } catch (error: unknown) {
-//     console.error('Error update job state execution:', error)
-//     return false
-//   }
-// }
+export async function createtaskLog(taskID: string, logpartNumber: number, logContent: string): Promise<boolean> {
+  try {
+    await connection`
+        INSERT INTO orc.tasklog(
+	      task_exec_id, task_part_number, logs, created_at)
+	      VALUES (${taskID},${logpartNumber},${logContent});
+        `
+    return true
+  } catch (error: unknown) {
+    console.error('Error insert execution task log:', error)
+    return false
+  }
+}
+
+export async function gettaskLog(taskID: string, size: number): Promise<boolean> {
+  try {
+    await connection`
+        SELECT id, task_exec_id, task_part_number, logs, created_at
+	      FROM orc.tasklog where task_exec_id=${taskID} order by task_part_number ASC limit ${size}
+        `
+    return true
+  } catch (error: unknown) {
+    console.error('Error get task log by taskID:', error)
+    return false
+  }
+}
