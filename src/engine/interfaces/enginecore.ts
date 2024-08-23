@@ -13,7 +13,7 @@ export interface JOB {
   name: string
   description: string
   image: string
-  status: string
+  status: STATUS
   execorder: string[]
   tasks: TASK[]
 }
@@ -31,6 +31,14 @@ export interface TASK {
   job_execution_id: string
   output: string
   depends_on: null | string
+}
+
+export interface TASKLOG {
+  id: string
+  jobid: string
+  taskid: TASK['id']
+  content: string
+  logpart: number
 }
 
 // export interface workflow {
