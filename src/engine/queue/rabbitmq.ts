@@ -50,14 +50,25 @@ export class Rabbitmq {
     return this.amqpConnection
   }
 
-  public async publish(QueueName: string, data: unknown): Promise<void> {
-    await this.channelWrapper.sendToQueue(QueueName, data)
+  public async publish(QueueName: string, data: unknown): Promise<boolean> {
+    try {
+      await this.channelWrapper.sendToQueue(QueueName, data)
+      return true
+    } catch (error: any) {
+      console.error(`Failed to publish to ${QueueName}: ${error?.message}`)
+      return false
+    }
   }
-  public async subscribe(QueueName: string, callback: (data: unknown) => Promise<void>): Promise<void> {
-    await this.channelWrapper.consume(QueueName, async (data) => {
-      await callback(data.content)
-      this.channelWrapper.ack(data)
-    })
+  public async subscribe(QueueName: string, callback: (data: any) => Promise<void>): Promise<void> {
     console.info(`Subscribed to ${QueueName}`)
+    return await this.channelWrapper.consume(QueueName, async (data) => {
+      try {
+        await callback(data)
+        this.channelWrapper.ack(data)
+      } catch (error: any) {
+        this.channelWrapper.nack(data)
+        console.error(`Error processing message from ${QueueName}: ${error?.message}`)
+      }
+    })
   }
 }
