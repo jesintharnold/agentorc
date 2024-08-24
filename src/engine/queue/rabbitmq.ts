@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { connect, AmqpConnectionManager, ChannelWrapper, Channel } from 'amqp-connection-manager'
+import { logger } from '../logger/logger'
 
 export class Rabbitmq {
   private amqpConnection: AmqpConnectionManager
@@ -9,10 +10,10 @@ export class Rabbitmq {
   constructor(queueNames: string[]) {
     this.queueNames = queueNames
     this.amqpConnection = connect(['amqp://localhost'])
-    this.amqpConnection.on('connect', () => console.info('Rabbit Mq connected'))
-    this.amqpConnection.on('disconnect', (err: unknown) => console.error('Disconnected from RabbitMQ', err))
+    this.amqpConnection.on('connect', () => logger.info('Rabbit Mq connected'))
+    this.amqpConnection.on('disconnect', (err: unknown) => logger.error('Disconnected from RabbitMQ', err))
     this.amqpConnection.on('connectFailed', (err: unknown, url: unknown) =>
-      console.error('Connection failed to RabbitMQ', err, url)
+      logger.error('Connection failed to RabbitMQ', err, url)
     )
 
     this.channelWrapper = this.amqpConnection.createChannel({
@@ -25,7 +26,7 @@ export class Rabbitmq {
   private async setupQueues(channel: Channel, queueNames: string[]): Promise<void> {
     for (const queue of queueNames) {
       await channel.assertQueue(queue, { durable: true })
-      console.info(`Queue ${queue} created`)
+      logger.info(`Queue ${queue} created`)
     }
   }
 
@@ -41,7 +42,7 @@ export class Rabbitmq {
       await this.amqpConnection.close()
       return true
     } catch (error: any) {
-      console.error(error?.message)
+      logger.error(error?.message)
       return false
     }
   }
@@ -55,19 +56,19 @@ export class Rabbitmq {
       await this.channelWrapper.sendToQueue(QueueName, data)
       return true
     } catch (error: any) {
-      console.error(`Failed to publish to ${QueueName}: ${error?.message}`)
+      logger.error(`Failed to publish to ${QueueName}: ${error?.message}`)
       return false
     }
   }
   public async subscribe(QueueName: string, callback: (data: any) => Promise<void>): Promise<void> {
-    console.info(`Subscribed to ${QueueName}`)
+    logger.info(`Subscribed to ${QueueName}`)
     return await this.channelWrapper.consume(QueueName, async (data) => {
       try {
         await callback(data)
         this.channelWrapper.ack(data)
       } catch (error: any) {
         this.channelWrapper.nack(data)
-        console.error(`Error processing message from ${QueueName}: ${error?.message}`)
+        logger.error(`Error processing message from ${QueueName}: ${error?.message}`)
       }
     })
   }

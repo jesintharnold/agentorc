@@ -35,6 +35,7 @@
     "dependency-graph": "^1.0.0",
     "fs-extra": "^11.2.0",
     "js-yaml": "^4.1.0",
-    "postgres": "^3.4.4"
+    "postgres": "^3.4.4",
+    "winston": "^3.14.2"
   }
 }

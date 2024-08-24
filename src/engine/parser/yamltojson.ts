@@ -5,6 +5,7 @@ import path from 'path'
 import Ajv from 'ajv'
 import { JOB } from '../interfaces/enginecore'
 import { ParseError } from './ParserError'
+import { logger } from '../logger/logger'
 const ajv = new Ajv({ strict: false })
 
 const schemaPath = path.resolve(path.join(process.cwd(), '/src/engine/misc-files/schema.json'))
@@ -35,7 +36,7 @@ export async function convertJson(yamlfile: string, yamlaspath: boolean = false)
     if (error instanceof ParseError) {
       throw error
     } else {
-      console.error('Unexpected error:', error)
+      logger.error('Unexpected error:', error)
       throw new ParseError('An unexpected error occurred while processing the workflow', 'UNEXPECTED_ERROR')
     }
   }

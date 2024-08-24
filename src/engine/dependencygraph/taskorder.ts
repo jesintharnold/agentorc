@@ -2,12 +2,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DepGraph } from 'dependency-graph'
 import { JOB } from '../interfaces/enginecore'
+import { logger } from '../logger/logger'
 
 export async function orderTask(data: JOB): Promise<string[]> {
   try {
     const graph = new DepGraph()
     const tasklength = data.tasks.length
-    console.log(tasklength)
+    logger.debug(tasklength)
     data.tasks.map((_task, index) => {
       if (!graph.hasNode(index.toString())) {
         graph.addNode(index.toString())
@@ -27,7 +28,7 @@ export async function orderTask(data: JOB): Promise<string[]> {
     })
     return graph.overallOrder()
   } catch (error: any) {
-    console.error(error?.message)
+    logger.debug(error?.message)
     throw error
   }
 }

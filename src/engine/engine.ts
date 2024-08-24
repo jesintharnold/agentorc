@@ -1,12 +1,13 @@
 import { getjobbyID } from './datastore/dbengine'
 import { Postgres } from './datastore/postgres'
+import { logger } from './logger/logger'
 
-console.log('Creating the engine')
-console.info('Connecting to Postres')
+logger.info('Creating the engine')
+logger.info('Connecting to Postres')
 const A = Postgres.getInstance()
 A.testConnection()
 setTimeout(async () => {
-  console.info('Running the Query DB job Insert')
+  logger.info('Running the Query DB job Insert')
   // const job = {
   //   name: 'jesinth',
   //   description: 'Cat',
@@ -16,5 +17,5 @@ setTimeout(async () => {
   //   execorder: ['A', 'B']
   // }
   const B = await getjobbyID('2f9df1e7-3c30-4894-8674-880e5081df7c')
-  console.log(B)
+  logger.debug(B)
 }, 3000)
