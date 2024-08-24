@@ -6,10 +6,12 @@ export enum STATUS {
   PENDING = 'PENDING',
   SCHEDULED = 'SCHEDULED',
   RUNNING = 'RUNNING',
-  COMPLETED = 'COMPLETED'
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED'
 }
 
 export interface JOB {
+  id?: string
   name: string
   description: string
   image: string

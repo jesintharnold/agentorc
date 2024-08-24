@@ -37,6 +37,10 @@ export class Rabbitmq {
     return this.queueSingleton
   }
 
+  public getWrapper() {
+    return this.channelWrapper
+  }
+
   public async closeMQ(): Promise<boolean> {
     try {
       await this.amqpConnection.close()
@@ -65,11 +69,22 @@ export class Rabbitmq {
     return await this.channelWrapper.consume(QueueName, async (data) => {
       try {
         await callback(data)
-        this.channelWrapper.ack(data)
       } catch (error: any) {
         this.channelWrapper.nack(data)
         logger.error(`Error processing message from ${QueueName}: ${error?.message}`)
       }
     })
+  }
+
+  public async getmsgCount(QueueName: string): Promise<number> {
+    try {
+      await this.channelWrapper.waitForConnect()
+      const queueInfo = await this.channelWrapper.checkQueue(QueueName)
+      logger.info(`Queue - ${QueueName} \n Queue Info - ${queueInfo}}`)
+      return queueInfo.messageCount
+    } catch (error: any) {
+      logger.error(`Failed to retrieve message count for ${QueueName}: ${error?.message}`)
+      throw error
+    }
   }
 }
