@@ -16,7 +16,7 @@ export interface JOB {
   description: string
   image: string
   status: STATUS
-  execorder: string[]
+  execorder: { order: string[] }
   tasks: TASK[]
 }
 
@@ -42,12 +42,3 @@ export interface TASKLOG {
   content: string
   logpart: number
 }
-
-// export interface workflow {
-//   name: string
-//   description: string
-//   jobID?: string
-//   image: string
-//   status?: status
-//   tasks: Task
-// }

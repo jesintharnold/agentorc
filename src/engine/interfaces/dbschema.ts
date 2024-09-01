@@ -1,4 +1,4 @@
-export type Json = unknown
+export type Json = string
 
 // Table jobexecutions
 export interface JobexecutionSchema {
@@ -17,6 +17,7 @@ export interface JobexecutionInputSchema {
   end_time?: Date | null
   updated_at?: Date | null
 }
+
 const jobexecutionSchema = {
   tableName: 'jobexecutions',
   columns: ['id', 'job_id', 'state', 'start_time', 'end_time', 'updated_at'],
@@ -34,7 +35,7 @@ export interface JobSchema {
   description: string
   created_at: Date | null
   updated_at: Date | null
-  execorder: Json | null
+  execorder: string | null
   tasks: Json
   image: string
 }
@@ -44,8 +45,8 @@ export interface JobsInputSchema {
   description: string
   created_at?: Date | null
   updated_at?: Date | null
-  execorder?: Json | null
-  tasks: Json
+  execorder?: string | null
+  tasks: string
   image: string
 }
 const jobSchema = {
@@ -88,6 +89,20 @@ const taskexecutionSchema = {
   $type: null as unknown as TaskexecutionSchema,
   $input: null as unknown as TaskexecutionInputSchema
 } as const
+
+export interface TasklogSchema {
+  id: string | null
+  task_exec_id: string | null
+  task_part_number: number | null
+  logs: string | null
+  created_at: Date | null
+}
+export interface TasklogInputSchema {
+  id?: string | null
+  task_exec_id?: string | null
+  task_part_number?: number | null
+  logs?: string | null
+}
 
 export interface TableTypes {
   jobexecution: {

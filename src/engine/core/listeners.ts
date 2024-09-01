@@ -6,7 +6,7 @@ import { logger } from '../logger/logger'
 import { publishJob, QUEUES, subscribeJob, subscribeTask, subscribeTaskLog } from '../queue/queue-engine'
 import { Rabbitmq } from '../queue/rabbitmq'
 
-class Enginelisteners {
+export class Enginelisteners {
   private mq: Rabbitmq
   constructor() {
     this.mq = Rabbitmq.getInstance()
