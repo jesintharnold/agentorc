@@ -36,8 +36,8 @@ export async function createJobExec(jobexec: JobexecutionInputSchema): Promise<{
   try {
     const data = await connection`
         INSERT INTO orc.jobexecutions(
-	      job_id, state, start_time)
-	      VALUES (${jobexec.job_id},${jobexec.state},${jobexec.start_time});
+	      job_id, state)
+	      VALUES (${jobexec.job_id},${jobexec.state});
         RETURNING id;
         `
     return data[0] as { id: string }

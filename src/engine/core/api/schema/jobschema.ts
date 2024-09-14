@@ -42,3 +42,14 @@ export const tasklogschema = z.object({
     required_error: 'Valid Task Log part number is needed'
   })
 })
+
+export const getjobschema = z.object({
+  body: z.object({
+    limit: z.number({
+      required_error: 'valid limit is needed'
+    }),
+    page: z.number({
+      required_error: 'valid page number is needed'
+    })
+  })
+})

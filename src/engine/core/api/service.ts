@@ -11,7 +11,8 @@ import {
   selectjobexecbyID,
   selecttaskexecbyID,
   selecttaskexecLog,
-  getJobexecwithTasks
+  getJobexecwithTasks,
+  createJobExec
 } from '../../datastore/dbengine'
 import { orderTask } from '../../dependencygraph/taskorder'
 import { UUID } from 'crypto'
@@ -40,6 +41,7 @@ export async function saveJob(jobs: JOB) {
 export async function runJob(jobID: UUID) {
   try {
     const jobData = await selectjobbyID(jobID)
+
     if (!jobData) {
       logger.warn(`Job with ID ${jobID} not found.`)
       throw new ServiceAPIError(`Job with ID ${jobID} not found`, 404)
@@ -53,19 +55,26 @@ export async function runJob(jobID: UUID) {
       throw new ServiceAPIError(`Invalid Job format `, 400)
     }
 
+    // Create a entry for Job in DB
+    const { id } = await createJobExec({
+      job_id: jobID,
+      state: STATUS.SCHEDULED
+    })
+
     const _task_ = tasks.map((task: { task_id: UUID; id: UUID; retrycount: number; script: string; env: ENV }) => ({
       id: v4(),
-      job_exc_id: jobID,
+      job_id: jobData.id,
       task_id: task.task_id,
       retrycount: task.retrycount,
       script: task.script,
       env: task.env,
       state: STATUS.PENDING,
-      job_execution_id: jobData.id,
+      job_execution_id: id,
       output: null
     }))
+
     const job: JOB = {
-      id: jobData.id,
+      id: id,
       name: jobData.name,
       description: jobData.description,
       image: jobData.image,
@@ -73,11 +82,13 @@ export async function runJob(jobID: UUID) {
       execorder: JSON.parse(jobData.tasks),
       tasks: _task_
     }
+
     const addQueueJob = await publishJob(QUEUES.JOB_PENDING_QUEUE, job)
     if (!addQueueJob) {
       logger.error(`Error while adding JOB to the ${QUEUES.JOB_PENDING_QUEUE}`)
       throw new ServiceAPIError(`Internal Server Error`, 500)
     }
+
     //Insert to the DB with TaskID generated
     const _task_exec_ = _task_.map((task: any) => {
       const _insert_exec_task_: TaskexecutionInputSchema = {
@@ -87,6 +98,7 @@ export async function runJob(jobID: UUID) {
       }
       return createTaskExec(_insert_exec_task_)
     })
+
     await Promise.all(_task_exec_)
     return job
   } catch (error: any) {

@@ -13,7 +13,7 @@ export interface JobexecutionInputSchema {
   id?: string
   job_id?: string | null
   state: string
-  start_time: Date
+  start_time?: Date
   end_time?: Date | null
   updated_at?: Date | null
 }
