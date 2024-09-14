@@ -4,7 +4,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import Ajv from 'ajv'
 import { JOB } from '../interfaces/enginecore'
-import { ParseError } from './ParserError'
+import { ParseError } from './parse.error'
 import { logger } from '../logger/logger'
 const ajv = new Ajv({ strict: false })
 

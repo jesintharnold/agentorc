@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UUID } from 'crypto'
 import {
   JobsInputSchema,
@@ -10,6 +11,7 @@ import {
 import { STATUS } from '../interfaces/enginecore'
 import { logger } from '../logger/logger'
 import { Postgres } from './postgres'
+import { DBError } from './db.error'
 
 const connection = Postgres.getInstance().con()
 
@@ -23,9 +25,9 @@ export async function createJob(job: JobsInputSchema): Promise<{ id: string }> {
           RETURNING id;
         `
     return data[0] as { id: string }
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error creating job:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -39,9 +41,9 @@ export async function createJobExec(jobexec: JobexecutionInputSchema): Promise<{
         RETURNING id;
         `
     return data[0] as { id: string }
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error creating job execution:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -54,9 +56,9 @@ export async function createTaskExec(taskexec: TaskexecutionInputSchema): Promis
 	      VALUES (${taskexec.id}, ${taskexec.job_exc_id}, ${taskexec.task_id}, ${taskexec.state});
         `
     return data[0] as { id: string }
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error creating Task execution:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -69,10 +71,10 @@ export async function selectJobs(limit: number, skip: number): Promise<JobSchema
         SELECT * FROM orc.jobs ORDER BY created_at ASC
         LIMIT ${limit} OFFSET ${skip};
         `
-    return data as unknown as JobSchema[]
-  } catch (error: unknown) {
+    return data as any as JobSchema[]
+  } catch (error: any) {
     logger.info('Error select Job:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -82,9 +84,9 @@ export async function selectjobbyID(ID: string): Promise<JobSchema> {
         SELECT * FROM orc.jobs where id=${ID};
         `
     return data[0] as JobSchema
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error select Job by ID:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -94,10 +96,10 @@ export async function selectexecJobs(limit: number, skip: number): Promise<Jobex
         SELECT * FROM orc.jobexecutions ORDER BY updated_at ASC
         LIMIT ${limit} OFFSET ${skip};
         `
-    return data as unknown as JobexecutionSchema[]
-  } catch (error: unknown) {
+    return data as any as JobexecutionSchema[]
+  } catch (error: any) {
     logger.info('Error select execution jobs :', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -107,9 +109,9 @@ export async function selectjobexecbyID(ID: string): Promise<JobexecutionSchema>
         SELECT * FROM orc.jobexecutions where id=${ID};
         `
     return data[0] as JobexecutionSchema
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error select Job execution:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -119,9 +121,9 @@ export async function selecttaskexecbyID(ID: string): Promise<JobexecutionSchema
         SELECT * FROM orc.taskexecutions where id=${ID};
         `
     return data[0] as JobexecutionSchema
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error select Task execution:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -133,9 +135,9 @@ export async function updatejobState(state: string, ID: string): Promise<boolean
 	          WHERE id=${ID};
         `
     return true
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error update job state execution:', error)
-    return false
+    throw new DBError(error?.message)
   }
 }
 
@@ -147,9 +149,9 @@ export async function updatetaskState(state: string, ID: string): Promise<boolea
 	          WHERE id=${ID};
         `
     return true
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error update job state execution:', error)
-    return false
+    throw new DBError(error?.message)
   }
 }
 
@@ -166,9 +168,9 @@ export async function createtaskLog(taskID: string, logpartNumber: number, logCo
 	      VALUES (${taskID},${logpartNumber},${logContent});
         `
     return true
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error insert execution task log:', error)
-    return false
+    throw new DBError(error?.message)
   }
 }
 
@@ -180,9 +182,9 @@ export async function selecttaskexecLog(taskID: string, size: number): Promise<T
         ASC limit ${size}
         `
     return _tasklog_[0] as TasklogSchema
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error select task log by taskID:', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }
 
@@ -193,8 +195,8 @@ export async function getJobexecwithTasks(jobexecID: UUID) {
         ON jobexec.id = taskexec.job_exc_id where jobexec.id = ${jobexecID}
         `
     return _tasklog_[0]
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.info('Error select whole jobs & Task', error)
-    throw error
+    throw new DBError(error?.message)
   }
 }

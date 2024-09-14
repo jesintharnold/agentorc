@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { v4 } from 'uuid'
 import { ENV, JOB, STATUS } from '../../interfaces/enginecore'
 import { logger } from '../../logger/logger'
@@ -18,8 +17,9 @@ import { orderTask } from '../../dependencygraph/taskorder'
 import { UUID } from 'crypto'
 import { publishJob, QUEUES } from '../../queue/queue-engine'
 import { JobexecutionSchema, JobSchema, TaskexecutionInputSchema } from '../../interfaces/dbschema'
+import { ServiceAPIError } from './service.error'
 
-async function saveJob(jobs: JOB) {
+export async function saveJob(jobs: JOB) {
   try {
     const _depgraph_ = await orderTask(jobs)
     jobs.execorder = { order: [..._depgraph_] }
@@ -32,17 +32,17 @@ async function saveJob(jobs: JOB) {
     })
     return DB
   } catch (error: any) {
-    logger.error(`Save Job error - ${error.message}`)
-    throw error
+    logger.error(`Save Job error - ${error}`)
+    throw new ServiceAPIError('Error while saving the Job', 400)
   }
 }
 
-async function runJob(jobID: UUID) {
+export async function runJob(jobID: UUID) {
   try {
     const jobData = await selectjobbyID(jobID)
     if (!jobData) {
       logger.warn(`Job with ID ${jobID} not found.`)
-      return null // Return null if job data is not found
+      throw new ServiceAPIError(`Job with ID ${jobID} not found`, 404)
     }
 
     let tasks
@@ -50,7 +50,7 @@ async function runJob(jobID: UUID) {
       tasks = JSON.parse(jobData.tasks)
     } catch (parseError) {
       logger.error('Error parsing tasks:', parseError)
-      throw new Error('Invalid tasks format')
+      throw new ServiceAPIError(`Invalid Job format `, 400)
     }
 
     const _task_ = tasks.map((task: { task_id: UUID; id: UUID; retrycount: number; script: string; env: ENV }) => ({
@@ -75,7 +75,8 @@ async function runJob(jobID: UUID) {
     }
     const addQueueJob = await publishJob(QUEUES.JOB_PENDING_QUEUE, job)
     if (!addQueueJob) {
-      throw Error('Publish JOB - Queue error')
+      logger.error(`Error while adding JOB to the ${QUEUES.JOB_PENDING_QUEUE}`)
+      throw new ServiceAPIError(`Internal Server Error`, 500)
     }
     //Insert to the DB with TaskID generated
     const _task_exec_ = _task_.map((task: any) => {
@@ -90,70 +91,88 @@ async function runJob(jobID: UUID) {
     return job
   } catch (error: any) {
     logger.error('Error running job:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`An unexpected error occurred while running the job`, 500)
   }
 }
-async function getJobs(limit: number, pages: number) {
+export async function getJobs(limit: number, pages: number) {
   try {
     // considering page starts with number - 1
     const _jobdata_: JobSchema[] = await selectJobs(limit, (pages - 1) * limit)
+    if (_jobdata_.length == 0) {
+      throw new ServiceAPIError(`No Jobs found`, 404)
+    }
     return _jobdata_
   } catch (error: any) {
     logger.error('Error running job:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`Unable to retrive Jobs`, 500)
   }
 }
-async function getJobById(jobID: UUID) {
+export async function getJobById(jobID: UUID) {
   try {
     const _jobdata_: JobSchema = await selectjobbyID(jobID)
+    if (!_jobdata_) {
+      throw new ServiceAPIError(`No Jobs found with the ID - ${jobID}`, 404)
+    }
     return _jobdata_
   } catch (error: any) {
     logger.error('Error Job by ID:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`Unable to retrive Jobs`, 500)
   }
 }
 
-async function getexecJobs(limit: number, pages: number) {
+export async function getexecJobs(limit: number, pages: number) {
   try {
     // considering page starts with number - 1
     const _jobdata_: JobexecutionSchema[] = await selectexecJobs(limit, (pages - 1) * limit)
+    if (_jobdata_.length == 0) {
+      throw new ServiceAPIError(`No Jobs executions found`, 404)
+    }
     return _jobdata_
   } catch (error: any) {
     logger.error('Error running job:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`Unable to retrive Job executions`, 500)
   }
 }
-async function getexecJobById(jobexecID: UUID) {
+export async function getexecJobById(jobexecID: UUID) {
   try {
     // considering page starts with number - 1
     const _jobdata_: JobexecutionSchema = await selectjobexecbyID(jobexecID)
+    if (!_jobdata_) {
+      throw new ServiceAPIError(`No Job executions found with the ID - ${jobexecID}`, 404)
+    }
     return _jobdata_
   } catch (error: any) {
     logger.error('Error running job exec by ID:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`Unable to retrive Job executions`, 500)
   }
 }
-async function taskexecById(taskexecID: UUID) {
+export async function taskexecById(taskexecID: UUID) {
   try {
     // considering page starts with number - 1
     const _taskdata_: JobexecutionSchema = await selecttaskexecbyID(taskexecID)
+    if (!_taskdata_) {
+      throw new ServiceAPIError(`No Task executions found with the ID - ${taskexecID}`, 404)
+    }
     return _taskdata_
   } catch (error: any) {
     logger.error('Error running task exec by ID:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`Unable to retrive Task executions`, 500)
   }
 }
-async function taskexecLog(taskexecID: UUID, part: number) {
+export async function taskexecLog(taskexecID: UUID, part: number) {
   try {
     const _taskdata_ = await selecttaskexecLog(taskexecID, part)
+    if (!_taskdata_) {
+      throw new ServiceAPIError(`No Task Log found with the ID - ${taskexecID} , Part - ${part}`, 404)
+    }
     return _taskdata_
   } catch (error: any) {
     logger.error('Error running task exec by ID:', error) // Log the error
-    throw error
+    throw new ServiceAPIError(`Unable to retrive Task execution Logs`, 500)
   }
 }
 
-async function getexecJobwithTasks(jobID: UUID) {
+export async function getexecJobwithTasks(jobID: UUID) {
   try {
     const _jobtaskdata_ = await getJobexecwithTasks(jobID)
     return _jobtaskdata_
