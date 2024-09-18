@@ -9,7 +9,7 @@ export class Rabbitmq {
   private queueNames: string[]
   constructor(queueNames: string[]) {
     this.queueNames = queueNames
-    this.amqpConnection = connect(['amqp://localhost'])
+    this.amqpConnection = connect(['amqp://user:bitnami@localhost:5672'])
     this.amqpConnection.on('connect', () => logger.info('Rabbit Mq connected'))
     this.amqpConnection.on('disconnect', (err: unknown) => logger.error('Disconnected from RabbitMQ', err))
     this.amqpConnection.on('connectFailed', (err: unknown, url: unknown) =>

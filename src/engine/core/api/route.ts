@@ -18,7 +18,7 @@ jobengineroute.post('/add', async (req: Request, res: Response) => {
     jobid: _save_.id
   })
 })
-jobengineroute.post('/run', schemavalidation(runJobschema), async (req: Request, res: Response): Response => {
+jobengineroute.post('/run', schemavalidation(runJobschema), async (req: Request, res: Response): Promise<Response> => {
   const { jobid } = req.body
   const job: JOB = await runJob(jobid)
   return res.status(200).json({
@@ -26,17 +26,21 @@ jobengineroute.post('/run', schemavalidation(runJobschema), async (req: Request,
     status: job.status
   })
 })
-jobengineroute.get('/', schemavalidation(getjobschema), async (req: Request, res: Response): Promise<Response> => {
+jobengineroute.get('/all', schemavalidation(getjobschema), async (req: Request, res: Response): Promise<Response> => {
   const { limit, page } = req.body
   const _getjobs_ = await getJobs(limit, page)
   return res.status(200).json(_getjobs_)
 })
-jobengineroute.post('/', schemavalidation(runJobschema), async (req: Request, res: Response): Promise<Response> => {
-  const { jobid } = req.body
-  const job: JobSchema = await getJobById(jobid)
-  return res.status(200).json(job)
-})
-jobengineroute.get('/executions', async (req: Request, res: Response): Promise<Response> => {
+jobengineroute.post(
+  '/getjob',
+  schemavalidation(runJobschema),
+  async (req: Request, res: Response): Promise<Response> => {
+    const { jobid } = req.body
+    const job: JobSchema = await getJobById(jobid)
+    return res.status(200).json(job)
+  }
+)
+jobengineroute.get('/executions/all', async (req: Request, res: Response): Promise<Response> => {
   const { limit, page } = req.body
   const _getjobsexec_ = await getexecJobs(limit, page)
   return res.status(200).json(_getjobsexec_)

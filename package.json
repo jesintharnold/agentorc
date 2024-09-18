@@ -7,7 +7,7 @@
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "build": "rimraf dist && tsc --build --verbose tsconfig.json",
     "start": "node ./dist/src/engine/engine.js",
-    "apistart": "node ./dist/src/engine/core/api/api.js"
+    "apistart": "node ./dist/src/engine/core/api/main.js"
   },
   "author": "",
   "license": "ISC",

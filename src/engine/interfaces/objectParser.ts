@@ -23,7 +23,7 @@ export function DbtoJob(_jobdb_: JobSchema) {
     description: _jobdb_.description,
     image: _jobdb_.image,
     status: STATUS.PENDING,
-    execorder: _jobdb_.execorder !== null ? [_jobdb_.execorder] : [],
+    execorder: _jobdb_.execorder !== null ? { order: [..._jobdb_.execorder] } : { order: [] },
     tasks: _taskmap_
   }
 }
