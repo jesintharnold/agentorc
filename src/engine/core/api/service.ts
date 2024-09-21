@@ -50,13 +50,14 @@ export async function runJob(jobID: UUID) {
     let tasks
     try {
       tasks = JSON.parse(jobData.tasks)
+      console.info(tasks)
     } catch (parseError) {
       logger.error('Error parsing tasks:', parseError)
       throw new ServiceAPIError(`Invalid Job format `, 400)
     }
 
     // Create a entry for Job in DB
-    const { id } = await createJobExec({
+    const { id: job_execution_id } = await createJobExec({
       job_id: jobID,
       state: STATUS.SCHEDULED
     })
@@ -69,12 +70,14 @@ export async function runJob(jobID: UUID) {
       script: task.script,
       env: task.env,
       state: STATUS.PENDING,
-      job_execution_id: id,
+      job_execution_id: job_execution_id,
       output: null
     }))
 
+    console.info(_task_)
+
     const job: JOB = {
-      id: id,
+      id: job_execution_id,
       name: jobData.name,
       description: jobData.description,
       image: jobData.image,
@@ -82,7 +85,6 @@ export async function runJob(jobID: UUID) {
       execorder: JSON.parse(jobData.tasks),
       tasks: _task_
     }
-
     const addQueueJob = await publishJob(QUEUES.JOB_PENDING_QUEUE, job)
     if (!addQueueJob) {
       logger.error(`Error while adding JOB to the ${QUEUES.JOB_PENDING_QUEUE}`)
@@ -94,8 +96,10 @@ export async function runJob(jobID: UUID) {
       const _insert_exec_task_: TaskexecutionInputSchema = {
         id: task.id,
         task_id: task.task_id,
-        state: STATUS.PENDING
+        state: STATUS.PENDING,
+        job_exc_id: job_execution_id
       }
+      console.info(_insert_exec_task_)
       return createTaskExec(_insert_exec_task_)
     })
 

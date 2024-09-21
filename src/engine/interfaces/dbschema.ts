@@ -72,7 +72,7 @@ export interface TaskexecutionSchema {
 }
 export interface TaskexecutionInputSchema {
   id: string
-  job_exc_id?: string | null
+  job_exc_id: string | null
   task_id: string
   state: string
   start_time?: Date | null

@@ -1,0 +1,17 @@
+meta {
+  name: Run job
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:5005/jobs/run
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "jobid": "1a25985e-b181-4697-bbc6-4da51d4f7b5f"
+  }
+}
