@@ -25,10 +25,10 @@ export function publishTaskLog(log: TASKLOG): Promise<boolean> {
   return MQ.publish(QUEUES.TASK_LOG_QUEUE, log)
 }
 
-export async function subscribeJob(QueueName: string, callback: (job: JOB) => Promise<void>) {
+export async function subscribeJob(QueueName: string, callback: (job: any) => Promise<void>) {
   return MQ.subscribe(QueueName, callback)
 }
-export async function subscribeTask(QueueName: string, callback: (task: TASK) => Promise<void>) {
+export async function subscribeTask(QueueName: string, callback: (task: any) => Promise<void>) {
   return MQ.subscribe(QueueName, callback)
 }
 export async function subscribeTaskLog(callback: (log: TASKLOG) => Promise<void>) {

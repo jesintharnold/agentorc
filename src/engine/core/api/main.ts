@@ -2,6 +2,7 @@ import express from 'express'
 import { logger } from '../../logger/logger'
 import { AddressInfo } from 'net'
 import { jobengineroute, taskengineroute } from './route'
+import { InitController } from '../controller'
 const server: express.Application = express()
 
 server.use(express.json())
@@ -9,7 +10,8 @@ server.use('/jobs', jobengineroute)
 server.use('/tasks', taskengineroute)
 
 const PORT = 5005
-const app = server.listen(PORT, () => {
+const app = server.listen(PORT, async () => {
+  await InitController()
   const address = app.address()
   if (address && typeof address !== 'string') {
     const netObj: AddressInfo = address
