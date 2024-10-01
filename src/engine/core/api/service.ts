@@ -14,22 +14,17 @@ import {
   getJobexecwithTasks,
   createJobExec
 } from '../../datastore/dbengine'
-import { orderTask } from '../../dependencygraph/taskorder'
 import { UUID } from 'crypto'
 import { publishJob, QUEUES } from '../../queue/queue-engine'
 import { JobexecutionSchema, JobSchema, TaskexecutionInputSchema } from '../../interfaces/dbschema'
-import { ServiceAPIError } from './service.error'
+import { ServiceAPIError } from './errors/service.error'
 
 export async function saveJob(jobs: JOB) {
   try {
-    const _depgraph_ = await orderTask(jobs)
-    jobs.execorder = { order: [..._depgraph_] }
     const DB = await createJob({
       name: jobs.name,
       description: jobs.description,
-      execorder: JSON.stringify(jobs.execorder),
-      tasks: JSON.stringify(jobs.tasks),
-      image: jobs.image
+      tasks: JSON.stringify(jobs.tasks)
     })
     return DB
   } catch (error: any) {
@@ -62,32 +57,29 @@ export async function runJob(jobID: UUID) {
       state: STATUS.SCHEDULED
     })
 
-    const _task_ = tasks.map((task: { task_id: UUID; id: UUID; retrycount: number; script: string; env: ENV }) => ({
-      id: v4(),
-      job_id: jobData.id,
-      task_id: task.task_id,
-      retrycount: task.retrycount,
-      script: task.script,
-      env: task.env,
-      state: STATUS.PENDING,
-      job_execution_id: job_execution_id,
-      output: null
-    }))
-
-    console.info(_task_)
-
+    const _task_ = tasks.map(
+      (task: { task_id: UUID; id: UUID; retrycount: number; script: string; env: ENV; image: string }) => ({
+        id: v4(),
+        job_id: jobData.id,
+        task_id: task.task_id,
+        retrycount: task.retrycount,
+        script: task.script,
+        env: task.env,
+        image: task.image,
+        state: STATUS.PENDING,
+        job_execution_id: job_execution_id
+      })
+    )
     const job: JOB = {
       id: job_execution_id,
       name: jobData.name,
       description: jobData.description,
-      image: jobData.image,
       status: STATUS.PENDING,
-      execorder: JSON.parse(jobData.tasks),
       tasks: _task_
     }
-    const addQueueJob = await publishJob(QUEUES.JOB_PENDING_QUEUE, job)
+    const addQueueJob = await publishJob(QUEUES.JOB_QUEUE, job)
     if (!addQueueJob) {
-      logger.error(`Error while adding JOB to the ${QUEUES.JOB_PENDING_QUEUE}`)
+      logger.error(`Error while adding JOB to the ${QUEUES.JOB_QUEUE}`)
       throw new ServiceAPIError(`Internal Server Error`, 500)
     }
 
@@ -99,7 +91,6 @@ export async function runJob(jobID: UUID) {
         state: STATUS.PENDING,
         job_exc_id: job_execution_id
       }
-      console.info(_insert_exec_task_)
       return createTaskExec(_insert_exec_task_)
     })
 

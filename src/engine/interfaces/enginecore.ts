@@ -14,16 +14,14 @@ export interface JOB {
   id?: string
   name: string
   description: string
-  image: string
   status: STATUS
-  execorder: { order: string[] }
   tasks: TASK[]
 }
 
 export interface TASK {
+  task_id: any
   name: string
   id: string
-  description: string
   retrycount: number
   script: string
   env: ENV[]
@@ -31,8 +29,8 @@ export interface TASK {
   start_time: Date
   end_time: Date
   job_execution_id: string
-  output: string
   depends_on: null | string
+  image: string
 }
 
 export interface TASKLOG {

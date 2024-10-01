@@ -6,6 +6,7 @@ import Ajv from 'ajv'
 import { JOB } from '../interfaces/enginecore'
 import { ParseError } from './parse.error'
 import { logger } from '../logger/logger'
+import { v4 } from 'uuid'
 const ajv = new Ajv({ strict: false })
 
 const schemaPath = path.resolve(path.join(process.cwd(), '/src/engine/misc-files/schema.json'))
@@ -30,7 +31,9 @@ export async function convertJson(yamlfile: string, yamlaspath: boolean = false)
       const errors = validateJson?.errors?.map((error) => error.message).join('\n')
       throw new ParseError(`Validation failed:\n${errors}`, 'VALIDATION_ERROR')
     }
-    //Generate a UUID value
+    yamlContent.tasks.forEach((task) => {
+      task.task_id = v4()
+    })
     return yamlContent
   } catch (error: any) {
     if (error instanceof ParseError) {
@@ -41,8 +44,3 @@ export async function convertJson(yamlfile: string, yamlaspath: boolean = false)
     }
   }
 }
-
-// ;(async function () {
-//   const A = await convertJson(path.join(process.cwd(), '/src/engine/misc-files/demo-workflow.yaml'), true)
-//   console.dir(A, { depth: null, colors: true })
-// })()

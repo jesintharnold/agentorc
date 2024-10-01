@@ -4,9 +4,9 @@ import { Postgres } from '../datastore/postgres'
 import { logger } from '../logger/logger'
 import { QUEUES_LIST } from '../queue/queue-engine'
 import { Rabbitmq } from '../queue/rabbitmq'
-import { Enginelisteners } from './listeners'
+import { Enginelisteners } from '../queue/queue-listeners'
 
-export async function InitController() {
+export async function initEngine() {
   try {
     //Initate Postgres
     const postgres = await Postgres.getInstance().testConnection()

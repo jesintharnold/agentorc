@@ -65,7 +65,6 @@ export class Rabbitmq {
     }
   }
   public async subscribe(QueueName: string, callback: (data: any) => Promise<void>): Promise<void> {
-    logger.info(`Subscribed to ${QueueName}`)
     return await this.channelWrapper.consume(QueueName, async (data) => {
       try {
         await callback(data)
@@ -80,7 +79,7 @@ export class Rabbitmq {
     try {
       await this.channelWrapper.waitForConnect()
       const queueInfo = await this.channelWrapper.checkQueue(QueueName)
-      logger.info(`Queue - ${QueueName} \n Queue Info - ${queueInfo}}`)
+      logger.info(`Queue - ${QueueName} Queue Info - ${queueInfo}`)
       return queueInfo.messageCount
     } catch (error: any) {
       logger.error(`Failed to retrieve message count for ${QueueName}: ${error?.message}`)

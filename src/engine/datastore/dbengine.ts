@@ -20,8 +20,8 @@ export async function createJob(job: JobsInputSchema): Promise<{ id: string }> {
   try {
     const data = await connection`
         INSERT INTO orc.jobs(
-	        name, description, image, execorder, tasks)
-	        VALUES (${job.name},${job.description},${job.image},${job.execorder},${job.tasks})
+	        name, description, tasks)
+	        VALUES (${job.name},${job.description},${job.tasks})
           RETURNING id;
         `
     return data[0] as { id: string }

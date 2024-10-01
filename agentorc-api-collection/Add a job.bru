@@ -6,12 +6,34 @@ meta {
 
 post {
   url: http://localhost:5005/jobs/add
-  body: json
+  body: text
   auth: none
+}
+
+headers {
+  Content-Type: application/yaml
 }
 
 body:json {
   {
     "job": "name: ludacris\ndescription: John wick pretzel\njobID: 0001\nimage: ubuntu-latest\ntasks:\n  - name: task-0\n    task_id: 868fba53-5dbf-4d1b-b96d-d833b04b67e3\n    description: task-0 wick emerges from shadow\n    retrycount: 0\n    script: \"echo hello-world-task-0\"\n    env:\n      key1: value-1\n      key2: value-2\n  - name: task-1\n    task_id: 0809fa07-7f10-4c51-8dd9-f41169dac51d\n    description: task-0 wick emerges from shadow\n    retrycount: 0\n    depends_on: task-1\n    script: \"echo hello-world-task-1\"\n    env:\n      key3: value-3\n      key4: value-4"
   }
+}
+
+body:text {
+  name: ludacris
+  description: Test job
+  tasks:
+    - name: task-0
+      retrycount: 0
+      script: "echo hello-world-task-0"
+      image: ubuntu:latest
+      env:
+        key1: value-1
+        key2: value-2
+    - name: task-1
+      retrycount: 0 
+      image: ubuntu:latest
+      script: |
+        "echo hello-world-task-1"
 }

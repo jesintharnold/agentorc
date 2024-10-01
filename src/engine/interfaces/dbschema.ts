@@ -35,9 +35,7 @@ export interface JobSchema {
   description: string
   created_at: Date | null
   updated_at: Date | null
-  execorder: string | null
   tasks: Json
-  image: string
 }
 export interface JobsInputSchema {
   id?: string
@@ -45,9 +43,7 @@ export interface JobsInputSchema {
   description: string
   created_at?: Date | null
   updated_at?: Date | null
-  execorder?: string | null
   tasks: string
-  image: string
 }
 const jobSchema = {
   tableName: 'jobs',

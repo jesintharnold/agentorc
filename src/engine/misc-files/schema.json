@@ -3,7 +3,6 @@
   "properties": {
     "name": {"type": "string"},
     "description": {"type": "string"},
-    "image": {"type": "string"},
     "tasks": {
       "type": "array",
       "minItems": 1,
@@ -11,17 +10,17 @@
         "type": "object",
         "properties": {
           "name": {"type": "string"},
-          "description": {"type": "string"},
           "retrycount": {"type": "number"},
-          "script": {"type": "string"}
+          "script": {"type": "string"},
+          "image": {"type": "string"}
         },
         "optionalProperties": {
           "depends_on": {"type": "string"},
           "env": {"type": "object"}
         },
-        "required": ["name"]
+        "required": ["name","image","script"]
       }
     }
   },
-  "required": ["name", "tasks","description","image"]
+  "required": ["name", "tasks"]
 }

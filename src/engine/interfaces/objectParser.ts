@@ -6,7 +6,7 @@ import { UUID } from 'crypto'
 
 export function DbtoJob(_jobdb_: JobSchema) {
   const _taskmap_ = JSON.parse(_jobdb_.tasks)
-  _taskmap_.map((task: { task_id: UUID; id: UUID; retrycount: number; script: string; env: ENV }) => ({
+  _taskmap_.map((task: { task_id: UUID; id: UUID; retrycount: number; script: string; env: ENV; image: string }) => ({
     id: task.id,
     job_exc_id: _taskmap_.id,
     task_id: task.task_id,
@@ -15,15 +15,13 @@ export function DbtoJob(_jobdb_: JobSchema) {
     env: task.env,
     state: STATUS.PENDING,
     job_execution_id: _jobdb_.id,
-    output: null
+    image: task.image
   }))
   const _job_: JOB = {
     id: _jobdb_.id,
     name: _jobdb_.name,
     description: _jobdb_.description,
-    image: _jobdb_.image,
     status: STATUS.PENDING,
-    execorder: _jobdb_.execorder !== null ? { order: [..._jobdb_.execorder] } : { order: [] },
     tasks: _taskmap_
   }
 }

@@ -11,8 +11,8 @@ export const jobengineroute = Router()
 // Insert router middleware here
 // engineroute.use()
 jobengineroute.post('/add', async (req: Request, res: Response) => {
-  const { job } = req.body
-  const _jobdata_: JOB = await convertJson(job)
+  const _jobdata_: JOB = await convertJson(req.body)
+  console.log(_jobdata_)
   const _save_ = await saveJob(_jobdata_)
   return res.status(200).json({
     jobid: _save_.id
