@@ -3,7 +3,7 @@
 workingDir=$(pwd)
 echo "Current working directory: $workingDir"
 npm run build
-cp -r ./src/engine/misc-files/* ./dist/src/engine/misc-files/
+cp -r ./src/misc-files/* ./dist/src/misc-files/
 echo "Copy files completed"
 echo "Building the engine"
 
