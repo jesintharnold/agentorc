@@ -32,6 +32,7 @@ export interface TASK {
   job_execution_id: string
   depends_on: null | string
   image: string
+  output?: string
 }
 
 export interface TASKLOG {

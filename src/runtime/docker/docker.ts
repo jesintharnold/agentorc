@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import DockerClient, { ImageInfo } from 'dockerode'
 import { logger } from '../../logger/logger'
-import { DockerError } from './docker.error'
-import { ENV } from '../../interfaces/enginecore'
+import { RuntimeError } from '../runtime.error'
+import { STATUS, TASK } from '../../interfaces/enginecore'
 import { Streamlogger } from '../stream-logger'
 export class DockerRuntime {
   private dockerInstance: DockerClient
   private static dockerSingleton: DockerRuntime
+  private options: any
   private constructor() {
     this.dockerInstance = new DockerClient()
   }
@@ -18,7 +19,7 @@ export class DockerRuntime {
     return this.dockerSingleton
   }
 
-  public async testConntection(): Promise<any> {
+  public async testConnection(): Promise<any> {
     try {
       const dockerInfo = await this.dockerInstance.info()
       logger.info(`Docker runtime connection - SUCCESS`)
@@ -29,7 +30,7 @@ export class DockerRuntime {
       }
     } catch (error: any) {
       logger.error(`Docker runtime connection - FAILED`)
-      throw new DockerError(error.message)
+      throw new RuntimeError(error.message)
     }
   }
 
@@ -42,7 +43,7 @@ export class DockerRuntime {
       })
       return container
     } catch (error: any) {
-      throw new DockerError(error.message)
+      throw new RuntimeError(error.message)
     }
   }
   public async startContainer(container: DockerClient.Container): Promise<boolean> {
@@ -50,7 +51,7 @@ export class DockerRuntime {
       await container.start()
       return true
     } catch (error: any) {
-      throw new DockerError(`Unable to start container with ID ${container.id} - ${error.message}`)
+      throw new RuntimeError(`Unable to start container with ID ${container.id} - ${error.message}`)
     }
   }
   public async stopContainer(container: DockerClient.Container): Promise<any> {
@@ -60,7 +61,7 @@ export class DockerRuntime {
     await container.remove({ force: true })
   }
 
-  public async runTask(task: { image: string; env: ENV; script: string }): Promise<any> {
+  public async runTask(task: TASK): Promise<TASK> {
     try {
       const env =
         Object.keys(task.env).length > 0 ? Object.entries(task.env).map(([key, value]) => `${key}=${value}`) : []
@@ -97,14 +98,14 @@ export class DockerRuntime {
 
       //wait for the container to finish
       const containerResult = await container.wait()
-
       if (containerResult != 0) {
-        logger.error('Container execution - FAILED')
+        throw new RuntimeError(`Container execution FAILED - ${task.id}`)
       }
-      //return the task data again sucker
-      logger.info('Container execution - COMPLETED')
+      task.state = STATUS.COMPLETED
+      await this.removeContainer(container)
+      return task
     } catch (error: any) {
-      logger.error(error)
+      throw new RuntimeError(`Error during running task - ${task.id} ${error?.message}`)
     }
   }
 
@@ -113,7 +114,7 @@ export class DockerRuntime {
       const images: ImageInfo[] = await this.dockerInstance.listImages()
       return images.some((image) => image.RepoTags && image.RepoTags.includes(imageName))
     } catch (error: any) {
-      throw new DockerError(`Failed to check image existence: ${error.message}`)
+      throw new RuntimeError(`Failed to check image existence: ${error.message}`)
     }
   }
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Transform, TransformCallback } from 'stream'
-import { DockerError } from './docker/docker.error'
+import { RuntimeError } from './runtime.error'
 import { TASKLOG } from '../interfaces/enginecore'
 import { publishTaskLog } from '../queue/queue-engine'
 
@@ -26,7 +26,7 @@ export class Streamlogger extends Transform {
       let cleanedLogs = ''
       const headerLength = 8
       if (this.chunkqueue.length >= this.chunkSize) {
-        callback(new DockerError('Log Buffer full'))
+        callback(new RuntimeError('Log Buffer full'))
         return
       }
 
@@ -40,7 +40,7 @@ export class Streamlogger extends Transform {
       this.chunkqueue.push(Buffer.from(cleanedLogs))
       callback()
     } catch (error: any) {
-      callback(new DockerError(error?.message))
+      callback(new RuntimeError(error?.message))
     }
   }
   private async startQueueTimer(): Promise<void> {

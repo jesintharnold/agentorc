@@ -9,4 +9,4 @@ echo "Building the engine"
 
 sleep 10
 echo "Starting the app"
-npm run apistart
+npm run start-engine
