@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ENV {
   [key: string]: string
 }
@@ -24,7 +25,7 @@ export interface TASK {
   id: string
   retrycount: number
   script: string
-  env: ENV[]
+  env: ENV
   state: STATUS
   start_time: Date
   end_time: Date
@@ -34,8 +35,7 @@ export interface TASK {
 }
 
 export interface TASKLOG {
-  id: string
-  jobid: string
+  id?: string
   taskid: TASK['id']
   content: string
   logpart: number

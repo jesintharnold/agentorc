@@ -81,7 +81,7 @@ export class Enginelisteners {
     logger.info(`Listener ${QUEUES.TASK_LOG_QUEUE} STARTED`)
     subscribeTaskLog(async (_log_) => {
       const log: TASKLOG = JSON.parse(_log_?.content)
-      logger.info(`TaskID - ${log.taskid} JobID - ${log.jobid} TaskPart - ${log.logpart}`)
+      logger.info(`TaskID - ${log.taskid} TaskPart - ${log.logpart}`)
       await createtaskLog(log.taskid, log.logpart, log.content)
       this.mq.getWrapper().ack(_log_)
     })
