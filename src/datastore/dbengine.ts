@@ -125,13 +125,28 @@ export async function selecttaskexecbyID(ID: string): Promise<JobexecutionSchema
   }
 }
 
-export async function updatejobState(state: string, ID: string): Promise<boolean> {
+export async function updatejobState(
+  state: string,
+  ID: string,
+  endtime?: string,
+  starttime?: string
+): Promise<boolean> {
   try {
-    await connection`
+    if (state === STATUS.COMPLETED || state === STATUS.FAILED) {
+      await connection`
         UPDATE orc.jobexecutions
-	        SET state=${state} ${state == STATUS.COMPLETED ? connection`, end_time = ${connection`CURRENT_TIMESTAMP()`}` : connection``}
-	          WHERE id=${ID};
-        `
+        SET 
+          state = ${state},
+          end_time = ${endtime}
+        WHERE id = ${ID}
+      `
+    } else {
+      await connection`
+        UPDATE orc.jobexecutions
+        SET state = ${state}
+        WHERE id = ${ID}
+      `
+    }
     return true
   } catch (error: any) {
     logger.error('Error update job state execution:', error?.message)
@@ -139,13 +154,30 @@ export async function updatejobState(state: string, ID: string): Promise<boolean
   }
 }
 
-export async function updatetaskState(state: string, ID: string): Promise<boolean> {
+export async function updatetaskState(
+  state: string,
+  ID: string,
+  endtime?: string,
+  starttime?: string
+): Promise<boolean> {
   try {
-    await connection`
+    if (state === STATUS.COMPLETED || state === STATUS.FAILED) {
+      logger.error(`${endtime} ${starttime}  ${ID}`)
+      await connection`
         UPDATE orc.taskexecutions
-	        SET state=${state} ${state == STATUS.COMPLETED ? connection`, end_time = ${connection`CURRENT_TIMESTAMP`}` : connection``}
-	        WHERE id=${ID};
-        `
+        SET 
+          state = ${state},
+          end_time = ${endtime},
+          start_time = ${starttime}
+        WHERE id = ${ID}
+      `
+    } else {
+      await connection`
+        UPDATE orc.taskexecutions
+        SET state = ${state}
+        WHERE id = ${ID}
+      `
+    }
     return true
   } catch (error: any) {
     throw new DBError(error?.message)

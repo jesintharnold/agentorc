@@ -27,12 +27,13 @@ export interface TASK {
   script: string
   env: ENV
   state: STATUS
-  start_time: Date
-  end_time: Date
+  start_time: string
+  end_time: string
   job_execution_id: string
   depends_on: null | string
   image: string
   output?: string
+  count?: [number, number]
 }
 
 export interface TASKLOG {

@@ -5,6 +5,7 @@ import { publishTask, QUEUES, subscribeTask } from '../queue/queue-engine'
 import { Rabbitmq } from '../queue/rabbitmq'
 import { DockerRuntime } from '../runtime/docker/docker'
 import { RuntimeError } from '../runtime/runtime.error'
+import { gettimewithoutzone } from '../utils/timezone'
 
 export class Worker {
   private runtime: DockerRuntime | undefined
@@ -19,7 +20,6 @@ export class Worker {
       this.runtime = DockerRuntime.getInstance()
       await this.runtime.testConnection()
     } catch (error: any) {
-      logger.error(error?.message)
       throw new RuntimeError('Runtime Initalization - FAILED')
     }
   }
@@ -29,7 +29,7 @@ export class Worker {
       subscribeTask(QUEUES.TASK_SCHEDULED_QUEUE, async (_task_) => {
         const task: TASK = JSON.parse(_task_?.content)
         logger.debug(
-          `Task consumed from ${QUEUES.TASK_SCHEDULED_QUEUE} Task ID - ${task.id} Job ID - ${task.job_execution_id}`
+          `Task consumed from ${QUEUES.TASK_SCHEDULED_QUEUE} Task name - ${task.name} Task ID - ${task.id} Job ID - ${task.job_execution_id}`
         )
         if (task.state == STATUS.SCHEDULED) {
           task.state = STATUS.RUNNING
@@ -44,9 +44,13 @@ export class Worker {
       logger.error(`ERROR IN CONSUMER - ${QUEUES.TASK_SCHEDULED_QUEUE} - ${error?.message}`)
     }
   }
-  private async handleTask(task: any) {
+  private async handleTask(task: TASK) {
+    const start_time = gettimewithoutzone()
     try {
       const runtask = await this.runtime?.runTask(task)
+      const end_time = gettimewithoutzone()
+      runtask!.start_time = start_time
+      runtask!.end_time = end_time
       if (runtask) {
         await publishTask(QUEUES.TASK_COMPLETED_QUEUE, runtask)
       }
@@ -54,8 +58,8 @@ export class Worker {
       const _task_ = task
       _task_.state = STATUS.FAILED
       _task_.output = `${error?.message}`
-      logger.error(`ERROR IN CONSUMER - ${QUEUES.TASK_SCHEDULED_QUEUE} - ${error?.message}`)
-      console.error(JSON.stringify(_task_))
+      _task_!.start_time = start_time
+      _task_!.end_time = gettimewithoutzone()
       await publishTask(QUEUES.TASK_FAILED_QUEUE, _task_)
     }
   }

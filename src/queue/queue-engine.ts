@@ -3,7 +3,6 @@
 import { JOB, TASK, TASKLOG } from '../interfaces/enginecore'
 import { Rabbitmq } from './rabbitmq'
 
-// Queues we are using for AgentORC. Retry mechanism will be added later.
 export const QUEUES_LIST = [
   'JOB_QUEUE',
   'JOB_COMPLETED_QUEUE',
@@ -28,7 +27,7 @@ export enum QUEUES {
 
 const MQ = Rabbitmq.getInstance()
 
-export function publishJob(QueueName: string, job: JOB): Promise<boolean> {
+export function publishJob(QueueName: string, job: JOB | { jobid: JOB['id']; endtime: string }): Promise<boolean> {
   return MQ.publish(QueueName, job)
 }
 export function publishTask(QueueName: string, task: TASK): Promise<boolean> {

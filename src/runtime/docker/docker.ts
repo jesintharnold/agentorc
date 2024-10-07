@@ -7,7 +7,6 @@ import { Streamlogger } from '../stream-logger'
 export class DockerRuntime {
   private dockerInstance: DockerClient
   private static dockerSingleton: DockerRuntime
-  private options: any
   private constructor() {
     this.dockerInstance = new DockerClient()
   }
@@ -22,14 +21,12 @@ export class DockerRuntime {
   public async testConnection(): Promise<any> {
     try {
       const dockerInfo = await this.dockerInstance.info()
-      logger.info(`Docker runtime connection - SUCCESS`)
       return {
         id: dockerInfo.ID,
         name: dockerInfo.Name,
         version: dockerInfo.ServerVersion
       }
     } catch (error: any) {
-      logger.error(`Docker runtime connection - FAILED`)
       throw new RuntimeError(error.message)
     }
   }
@@ -41,7 +38,6 @@ export class DockerRuntime {
         Cmd: ['/bin/bash', '-c', cmd],
         Env: env
       })
-      logger.debug(`Docker container ID: ${container.id} , Image ID : ${image}`)
       return container
     } catch (error: any) {
       throw new RuntimeError(error.message)
@@ -49,7 +45,6 @@ export class DockerRuntime {
   }
   public async startContainer(container: DockerClient.Container): Promise<boolean> {
     try {
-      logger.debug(`Docker container ID: ${container.id} started`)
       await container.start()
       return true
     } catch (error: any) {
@@ -81,7 +76,6 @@ export class DockerRuntime {
       const container = await this.createContainer(containerConfig.image, containerConfig.cmd, containerConfig.env)
       await this.startContainer(container)
       const logStream = new Streamlogger(task.id)
-      //Stream the logs
       const containerLogs = await container.logs({
         stdout: true,
         stderr: true,
@@ -97,7 +91,6 @@ export class DockerRuntime {
           logger.error(msg)
         })
 
-      // wait for the container to finish
       const containerResult = await container.wait()
       if (containerResult.StatusCode != 0) {
         throw new RuntimeError(`Container execution FAILED - ${task.id}`)
@@ -106,7 +99,6 @@ export class DockerRuntime {
       await this.removeContainer(container)
       return task
     } catch (error: any) {
-      logger.error(`DockerRuntime Container execution FAILED - ${task.id}`)
       throw new RuntimeError(`Docker runtime error during running task - ${task.id} ${error?.message}`)
     }
   }
