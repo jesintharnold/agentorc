@@ -19,6 +19,7 @@ export class Rabbitmq {
     this.channelWrapper = this.amqpConnection.createChannel({
       json: true,
       setup: async (channel: any) => {
+        await channel.prefetch(1)
         await this.setupQueues(channel, this.queueNames)
       }
     })
@@ -69,8 +70,9 @@ export class Rabbitmq {
       try {
         await callback(data)
       } catch (error: any) {
-        this.channelWrapper.nack(data)
+        // this.channelWrapper.nack(data)
         logger.error(`Error processing message from ${QueueName}: ${error?.message}`)
+        throw error
       }
     })
   }

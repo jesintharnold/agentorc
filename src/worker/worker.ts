@@ -25,24 +25,26 @@ export class Worker {
   }
   public startConsumer() {
     try {
+      logger.info(`Listener ${QUEUES.TASK_SCHEDULED_QUEUE} STARTED`)
       subscribeTask(QUEUES.TASK_SCHEDULED_QUEUE, async (_task_) => {
         const task: TASK = JSON.parse(_task_?.content)
-        logger.debug(`Task scheduled - ${task.id} Job Id - ${task.job_execution_id}`)
+        logger.debug(
+          `Task consumed from ${QUEUES.TASK_SCHEDULED_QUEUE} Task ID - ${task.id} Job ID - ${task.job_execution_id}`
+        )
         if (task.state == STATUS.SCHEDULED) {
           task.state = STATUS.RUNNING
           await publishTask(QUEUES.TASK_RUNNING_QUEUE, task)
         }
-        this.mq.getWrapper().ack(_task_)
-        //Checking based on state
         if (task.state == STATUS.RUNNING) {
           await this.handleTask(task)
+          this.mq.getWrapper().ack(_task_)
         }
       })
     } catch (error: any) {
-      logger.error(error?.message)
+      logger.error(`ERROR IN CONSUMER - ${QUEUES.TASK_SCHEDULED_QUEUE} - ${error?.message}`)
     }
   }
-  private async handleTask(task: TASK) {
+  private async handleTask(task: any) {
     try {
       const runtask = await this.runtime?.runTask(task)
       if (runtask) {
@@ -52,7 +54,8 @@ export class Worker {
       const _task_ = task
       _task_.state = STATUS.FAILED
       _task_.output = `${error?.message}`
-      logger.error(_task_)
+      logger.error(`ERROR IN CONSUMER - ${QUEUES.TASK_SCHEDULED_QUEUE} - ${error?.message}`)
+      console.error(JSON.stringify(_task_))
       await publishTask(QUEUES.TASK_FAILED_QUEUE, _task_)
     }
   }

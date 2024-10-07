@@ -11,8 +11,9 @@ export class Enginelisteners {
     this.mq = Rabbitmq.getInstance()
     this.listenJOB()
     this.listencompleteTASK()
-    this.listenlogTask()
+    this.listenlogTASK()
     this.listenfailedTASK()
+    this.listenRunningTASK()
   }
   private listenJOB(job_schedule_count: number = 5) {
     logger.info(`Listener ${QUEUES.JOB_QUEUE} STARTED`)
@@ -26,8 +27,8 @@ export class Enginelisteners {
         const task_published = await Promise.all(
           job.tasks.map(async (task) => {
             try {
-              await publishTask(QUEUES.TASK_SCHEDULED_QUEUE, task)
               task.state = STATUS.SCHEDULED
+              await publishTask(QUEUES.TASK_SCHEDULED_QUEUE, task)
               await updatetaskState(STATUS.SCHEDULED, task.id)
               return true
             } catch (error) {
@@ -49,7 +50,7 @@ export class Enginelisteners {
           job.id ? updatejobState(STATUS.FAILED, job.id) : false
         }
       } else {
-        logger.info(
+        logger.debug(
           `Job queue is full. Current scheduled jobs: ${scheduled_job_queue_count}. Job not scheduled: ${job.name}`
         )
       }
@@ -59,8 +60,9 @@ export class Enginelisteners {
     logger.info(`Listener ${QUEUES.TASK_COMPLETED_QUEUE} STARTED`)
     subscribeTask(QUEUES.TASK_COMPLETED_QUEUE, async (_task_) => {
       const task: TASK = JSON.parse(_task_?.content)
-      logger.info(`Task completed - ${task.id} Job Id - ${task.job_execution_id}`)
-      task.state = STATUS.COMPLETED
+      logger.debug(
+        `Task consumed from ${QUEUES.TASK_COMPLETED_QUEUE} Task ID - ${task.id} Job ID - ${task.job_execution_id}`
+      )
       await updatetaskState(STATUS.COMPLETED, task.id)
       this.mq.getWrapper().ack(_task_)
     })
@@ -70,14 +72,15 @@ export class Enginelisteners {
     logger.info(`Listener ${QUEUES.TASK_FAILED_QUEUE} STARTED`)
     subscribeTask(QUEUES.TASK_FAILED_QUEUE, async (_task_) => {
       const task: TASK = JSON.parse(_task_?.content)
-      task.state = STATUS.FAILED
-      logger.info(`Task failed - ${task.id} Job Id - ${task.job_execution_id} retry count - ${task.retrycount}`)
+      logger.debug(
+        `Task consumed from ${QUEUES.TASK_FAILED_QUEUE} Task ID - ${task.id} Job ID - ${task.job_execution_id}`
+      )
       await updatetaskState(STATUS.FAILED, task.id)
       this.mq.getWrapper().ack(_task_)
     })
   }
 
-  private listenlogTask() {
+  private listenlogTASK() {
     logger.info(`Listener ${QUEUES.TASK_LOG_QUEUE} STARTED`)
     subscribeTaskLog(async (_log_) => {
       const log: TASKLOG = JSON.parse(_log_?.content)
@@ -87,7 +90,18 @@ export class Enginelisteners {
     })
   }
   // Listeners pending
-  // - TASK_SCHEDULED_QUEUE
   // - JOB_FAILED_QUEUE
   // - JOB_COMPLETED_QUEUE
+
+  private listenRunningTASK() {
+    logger.info(`Listener ${QUEUES.TASK_RUNNING_QUEUE} STARTED`)
+    subscribeTask(QUEUES.TASK_RUNNING_QUEUE, async (_task_) => {
+      const task: TASK = JSON.parse(_task_?.content)
+      logger.debug(
+        `Task consumed from ${QUEUES.TASK_RUNNING_QUEUE} Task ID - ${task.id} Job ID - ${task.job_execution_id}`
+      )
+      await updatetaskState(STATUS.RUNNING, task.id)
+      this.mq.getWrapper().ack(_task_)
+    })
+  }
 }

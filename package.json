@@ -7,7 +7,7 @@
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "build": "rimraf dist && tsc --build --verbose tsconfig.json",
     "start-engine": "node ./dist/src/engine/api/main.js",
-    "start-worker": ""
+    "start-worker": "node ./dist/src/worker/worker.js"
   },
   "author": "",
   "license": "ISC",

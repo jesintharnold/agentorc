@@ -21,19 +21,19 @@ body:json {
 }
 
 body:text {
-  name: ludacris
-  description: Test job
+  name: Test-2
+  description: This is a test job containing 2 tasks
   tasks:
     - name: task-0
       retrycount: 0
-      script: "echo hello-world-task-0"
-      image: ubuntu:latest
+      script: "echo $firstname - $lastname"
+      image: nginx:latest
       env:
-        key1: value-1
-        key2: value-2
+        firstname: jesinth 
+        lastname: arnold
     - name: task-1
       retrycount: 0 
-      image: ubuntu:latest
+      image: python:latest
       script: |
-        "echo hello-world-task-1"
+        print("This is from python Image")
 }

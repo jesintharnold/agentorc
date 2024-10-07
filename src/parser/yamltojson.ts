@@ -9,7 +9,7 @@ import { logger } from '../logger/logger'
 import { v4 } from 'uuid'
 const ajv = new Ajv({ strict: false })
 
-const schemaPath = path.resolve(path.join(process.cwd(), '/src/engine/misc-files/schema.json'))
+const schemaPath = path.resolve(path.join(process.cwd(), '/src/misc-files/schema.json'))
 const schemaData = fs.readFileSync(schemaPath, 'utf-8')
 const validateJson = ajv.compile(JSON.parse(schemaData))
 
